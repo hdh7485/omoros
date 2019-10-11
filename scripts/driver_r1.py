@@ -142,10 +142,12 @@ class Robot:
          self.config.WIDTH = 0.591        # Apply vehicle width for R1 version
          self.config.WHEEL_R = 0.11       # Apply wheel radius for R1 version
          self.config.WHEEL_MAXV = 1200.0  # Maximum speed can be applied to each wheel (mm/s)
-         self.config.V_Limit = 1.0        # Limited speed (m/s)
+         self.config.V_Limit = 3.0        # Limited speed (m/s)
          self.config.W_Limit = 0.1
-         self.config.V_Limit_JOY = 0.25   # Limited speed for joystick control
-         self.config.W_Limit_JOY = 0.05
+         #self.config.V_Limit_JOY = 0.25   # Limited speed for joystick control
+         self.config.V_Limit_JOY = 0.6   # Limited speed for joystick control
+         #self.config.W_Limit_JOY = 0.05
+         self.config.W_Limit_JOY = 0.07
          self.config.ArrowFwdStep = 250   # Steps move forward based on Odometry
          self.config.ArrowRotRate = 0.125
          self.config.encoder.Dir = 1.0
@@ -197,7 +199,8 @@ class Robot:
 	 self.setREGI(3,'0')
          sleep(0.05)
 	 self.setREGI(4,'0')
-         #self.setREGI(3,'QVW')
+         sleep(0.05)
+         self.setREGI(3,'QVW')
          #sleep(0.05)
          #self.setREGI(4,'QRPM')
          sleep(0.05)
@@ -237,9 +240,13 @@ class Robot:
       reader = self.ser_io.readline()
       if reader:
          packet = reader.split(",")
+         rospy.loginfo("packet")
+         rospy.loginfo(packet)
          try:
             header = packet[0].split("#")[1]
             if header.startswith('QVW'):
+               rospy.loginfo(int(packet[1]))
+               rospy.loginfo(int(packet[2]))
                self.vel = int(packet[1])
                self.rot = int(packet[2])
             elif header.startswith('QENCOD'):
@@ -471,16 +478,16 @@ class Robot:
       Vy = twist.twist.linear.y
       Vth = twist.twist.angular.z
       odom_quat = quaternion_from_euler(0,0,pose.theta)
-      self.odom_broadcaster.sendTransform((pose.x,pose.y,0.),odom_quat,now,'base_link','odom')
-      #self.odom_broadcaster.sendTransform((pose.x,pose.y,0.),odom_quat,now,'base_footprint','odom')
+      #self.odom_broadcaster.sendTransform((pose.x,pose.y,0.),odom_quat,now,'base_link','odom')
+      self.odom_broadcaster.sendTransform((pose.x,pose.y,0.),odom_quat,now,'base_footprint','odom')
       
       odom = Odometry()
       odom.header.stamp = now
       odom.header.frame_id = 'odom'
       odom.pose.pose = Pose(Point(pose.x,pose.y,0.),Quaternion(*odom_quat))
       
-      odom.child_frame_id = 'base_link'
-      #odom.child_frame_id = 'base_footprint'
+      #odom.child_frame_id = 'base_link'
+      odom.child_frame_id = 'base_footprint'
       odom.twist.twist = Twist(Vector3(Vx,Vy,0),Vector3(0,0,Vth))
       #print "x:{:.2f} y:{:.2f} theta:{:.2f}".format(pose.x, pose.y, pose.theta*180/math.pi)      
       self.odom_pub.publish(odom)
