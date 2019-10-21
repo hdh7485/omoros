@@ -142,10 +142,10 @@ class Robot:
          self.config.WIDTH = 0.591        # Apply vehicle width for R1 version
          self.config.WHEEL_R = 0.11       # Apply wheel radius for R1 version
          self.config.WHEEL_MAXV = 1200.0  # Maximum speed can be applied to each wheel (mm/s)
-         self.config.V_Limit = 3.0        # Limited speed (m/s)
+         self.config.V_Limit = 20.0        # Limited speed (m/s)
          self.config.W_Limit = 0.1
          #self.config.V_Limit_JOY = 0.25   # Limited speed for joystick control
-         self.config.V_Limit_JOY = 0.6   # Limited speed for joystick control
+         self.config.V_Limit_JOY = 0.8   # Limited speed for joystick control
          #self.config.W_Limit_JOY = 0.05
          self.config.W_Limit_JOY = 0.07
          self.config.ArrowFwdStep = 250   # Steps move forward based on Odometry
@@ -240,13 +240,13 @@ class Robot:
       reader = self.ser_io.readline()
       if reader:
          packet = reader.split(",")
-         rospy.loginfo("packet")
-         rospy.loginfo(packet)
+         #rospy.loginfo("packet")
+         #rospy.loginfo(packet)
          try:
             header = packet[0].split("#")[1]
             if header.startswith('QVW'):
-               rospy.loginfo(int(packet[1]))
-               rospy.loginfo(int(packet[2]))
+               #rospy.loginfo(int(packet[1]))
+               #rospy.loginfo(int(packet[2]))
                self.vel = int(packet[1])
                self.rot = int(packet[2])
             elif header.startswith('QENCOD'):
@@ -362,7 +362,7 @@ class Robot:
       """ Set wheel speed from cmd message from auto navigation """
       if self.isAutoMode:
          #print "CMD_VEL: {:.2f} {:.2f} ".format(cmd.linear.x, cmd.angular.z)
-         cmdV = cmd.linear.x
+         cmdV = cmd.linear.x * 5
          cmdW = cmd.angular.z
          if cmdV>self.config.V_Limit:
             cmdV = self.config.V_Limit
